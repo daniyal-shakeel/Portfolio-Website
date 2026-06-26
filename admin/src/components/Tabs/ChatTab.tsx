@@ -222,7 +222,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.1} />
-                  <XAxis dataKey="requestDataKey" stroke="var(--muted-foreground)" fontSize={9} tickLine={false} />
+                  <XAxis dataKey={requestDataKey} stroke="var(--muted-foreground)" fontSize={9} tickLine={false} />
                   <YAxis stroke="var(--muted-foreground)" fontSize={9} tickLine={false} />
                   <ChartTooltip contentStyle={{ backgroundColor: "var(--card)", borderColor: "var(--border)", color: "var(--foreground)", fontSize: "10px" }} itemStyle={{ color: "var(--foreground)" }} />
                   <Area type="monotone" dataKey="requests" name="Requests" stroke={activeColors.secondary} fillOpacity={1} fill="url(#colorRequests)" />
@@ -279,7 +279,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {statusData.map((entry, index) => (
+                    {statusData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={statusColors[index % statusColors.length]} />
                     ))}
                   </Pie>

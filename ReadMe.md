@@ -40,7 +40,7 @@ The workspace is organized as follows:
     *   **AI Chat Dashboard Analytics**: Rich analytics showing today's and all-time token and request usage, active vs inactive session ratios, and cumulative session growth charts. Includes a searchable and sortable session breakdown usage table.
     *   **Custom Delete Dialogue**: CLI terminal-themed warning confirmation dialog (`rm -rf ./{type}/{item}`).
     *   **Transactional Toasts**: Active operation states reported via `sonner` toasts.
-    *   **verbatimModuleSyntax Support**: Employs strict type-only imports (`import type`) for interfaces and definitions to guarantee smooth compilation under verbatim module syntax rules.
+    *   **verbatimModuleSyntax Support**: Employs strict type-only imports (`import type`) for interfaces and definitions and adheres to strict compiler rules (eliminating unused variables and mapping chart data keys dynamically) to guarantee smooth compilation under verbatim module syntax rules.
 
 ### 2.3 Public Client Portfolio (`client/`)
 *   Fetches real-time projects, experiences, skills, education, currently learning, settings, taglines, links, and stats from the MongoDB database, replacing static data configurations.

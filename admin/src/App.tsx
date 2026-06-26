@@ -67,7 +67,6 @@ function App() {
   const [settings, setSettings] = useState<any>(null);
   const [taglines, setTaglines] = useState<Tagline[]>([]);
   const [links, setLinks] = useState<LinkItem[]>([]);
-  const [chatLogs, setChatLogs] = useState<any[]>([]);
   const [chatStats, setChatStats] = useState<ChatStats>({
     summary: {
       todayTokens: 0,
@@ -182,9 +181,6 @@ function App() {
 
       const cvRes = await fetch(`${API_BASE_URL}/api/cv/status`);
       if (cvRes.ok) setCvMetadata(await cvRes.json());
-
-      const chatLogsRes = await fetch(`${API_BASE_URL}/api/chat/logs`, { credentials: "include" });
-      if (chatLogsRes.ok) setChatLogs(await chatLogsRes.json());
 
       const chatStatsRes = await fetch(`${API_BASE_URL}/api/chat/stats`, { credentials: "include" });
       if (chatStatsRes.ok) setChatStats(await chatStatsRes.json());
