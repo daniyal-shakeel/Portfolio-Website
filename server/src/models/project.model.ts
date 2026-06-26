@@ -8,6 +8,7 @@ export interface IProject extends Document {
   demo?: string;
   featured?: boolean;
   longDescription?: string;
+  thumbnail?: string;
 }
 
 const ProjectSchema: Schema = new Schema({
@@ -18,6 +19,7 @@ const ProjectSchema: Schema = new Schema({
   demo: { type: String },
   featured: { type: Boolean, default: false },
   longDescription: { type: String },
+  thumbnail: { type: String },
 });
 
 export const Project = mongoose.model<IProject>("Project", ProjectSchema);

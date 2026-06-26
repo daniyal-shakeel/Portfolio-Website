@@ -9,11 +9,30 @@ interface Education {
   gpa?: string;
 }
 
+interface LearningItem {
+  _id: string;
+  name: string;
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
-const currentlyLearning = ["NestJS", "n8n Agents", "System Design", "Cloud Architecture"];
 
 const About = () => {
   const [eduList, setEduList] = useState<Education[]>([]);
+  const [learningList, setLearningList] = useState<LearningItem[]>([]);
+
+  useEffect(() => {
+    const fetchLearning = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/learning`);
+        if (res.ok) {
+          const data = await res.json();
+          setLearningList(data);
+        }
+      } catch (err) {
+      }
+    };
+    fetchLearning();
+  }, []);
 
   useEffect(() => {
     const fetchEducation = async () => {
@@ -59,12 +78,12 @@ const About = () => {
             <span className="text-neon-green">#</span> Currently Learning
           </h3>
           <div className="flex flex-wrap gap-2">
-            {currentlyLearning.map((item) => (
+            {learningList.map((item) => (
               <span
-                key={item}
+                key={item._id}
                 className="bg-card border border-primary/30 text-neon-green text-xs font-mono px-3 py-1.5 rounded-full pulse-soft"
               >
-                {item}
+                {item.name}
               </span>
             ))}
           </div>

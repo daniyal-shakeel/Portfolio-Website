@@ -8,6 +8,7 @@ import { Settings } from "../models/settings.model.js";
 import { Tagline } from "../models/tagline.model.js";
 import { Link } from "../models/link.model.js";
 import { Stat } from "../models/stat.model.js";
+import { Learning } from "../models/learning.model.js";
 
 
 const initialProjects = [
@@ -163,6 +164,13 @@ const initialStats = [
   { label: "Cups of Tea", value: "∞", tooltip: "", sortOrder: 3 },
 ];
 
+const initialLearning = [
+  { name: "NestJS" },
+  { name: "n8n Agents" },
+  { name: "System Design" },
+  { name: "Cloud Architecture" }
+];
+
 async function seedData(): Promise<void> {
   const projectCount = await Project.countDocuments();
   if (projectCount === 0) {
@@ -202,6 +210,11 @@ async function seedData(): Promise<void> {
   const statCount = await Stat.countDocuments();
   if (statCount === 0) {
     await Stat.insertMany(initialStats);
+  }
+
+  const learningCount = await Learning.countDocuments();
+  if (learningCount === 0) {
+    await Learning.insertMany(initialLearning);
   }
 }
 

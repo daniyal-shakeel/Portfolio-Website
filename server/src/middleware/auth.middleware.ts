@@ -9,7 +9,7 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
-  const cookieToken = req.cookies?.__dca_admin_token;
+  const cookieToken = req.cookies?.__pw_admin_token;
   let token = cookieToken;
 
   if (!token) {

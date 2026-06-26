@@ -19,7 +19,7 @@ export class AuthController {
       return;
     }
 
-    res.cookie("__dca_admin_token", token, {
+    res.cookie("__pw_admin_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
@@ -34,7 +34,7 @@ export class AuthController {
   }
 
   static async logout(req: Request, res: Response): Promise<void> {
-    res.clearCookie("__dca_admin_token", {
+    res.clearCookie("__pw_admin_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",

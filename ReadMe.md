@@ -18,8 +18,9 @@ The workspace is organized as follows:
 ## 2. Features
 
 ### 2.1 Backend Server (`server/`)
-*   **Database Management**: Connects to MongoDB, executing automated seeding on first start to load initial data profiles (projects, experiences, skills, education, settings, taglines, links, and stats) if the collections are empty.
-*   **API Routes**: Exposes REST endpoints for CRUD operations on projects, experiences, skills, education, settings, taglines, links, and stats (figures).
+*   **Database Management**: Connects to MongoDB, executing automated seeding on first start to load initial data profiles (projects, experiences, skills, education, currently learning, settings, taglines, links, and stats) if the collections are empty.
+*   **API Routes**: Exposes REST endpoints for CRUD operations on projects, experiences, skills, education, currently learning, settings, taglines, links, and stats (figures).
+*   **Thumbnail Storage**: Integrates a `multipart/form-data` upload endpoint (`/api/projects/upload`) using `multer` that saves project thumbnails locally on disk in `server/project_thumbnails/`. Automatically cleans up old or deleted thumbnail files from the filesystem.
 *   **AI Chat Assistant**: Handles AI queries at `/api/chat` with secure HTTP-only cookie-based session tracking, daily token limits, anti-tampering verification (comparing cookie session IDs against client payloads to block tampering), and database limit validation, plus logging `/api/chat/logs` and stats `/api/chat/stats`.
 *   **CV Document Upload**: Exposes a secure endpoint to upload PDF documents as base64 strings (`/api/cv/upload`) and stream downloads (`/api/cv/download`) to authorized users and visitors.
 *   **Security Layers**:
@@ -27,25 +28,30 @@ The workspace is organized as follows:
     *   **DDoS Prevention**: Implements payload size limits (10kb) on incoming JSON and URL-encoded bodies, with a specific exception of 5MB for CV document uploads.
     *   **NoSQL Injection Defense**: Uses `express-mongo-sanitize` to strip query operators from input keys.
     *   **XSS Protection**: Cleans inputs recursively using the `xss` library, and sets secure headers via `helmet`.
-*   **Authentication & Sessions**: Issues JWT tokens delivered as HTTP-only, secure, strict SameSite cookies (`__dca_admin_token`), with session validation (`/api/auth/verify`) and logout handlers.
+*   **Authentication & Sessions**: Issues JWT tokens delivered as HTTP-only, secure, strict SameSite cookies (`__pw_admin_token`), with session validation (`/api/auth/verify`) and logout handlers.
 
 ### 2.2 Admin Dashboard (`admin/`)
 *   **Authentication Portal**: Monospace developer terminal login prompt validating credentials against backend server configurations.
 *   **Management Panel**:
-    *   **Dynamic Tabs**: Toggle controls for Projects, Experience, Skills, Education, Settings, Taglines, Links, Figures (Stats), and CV.
+    *   **Responsive Sidebar**: Professional collapsible navigation sidebar for desktop and mobile devices, with active item highlight and tab persistence (`__pw_admin_active_tab`) across page refreshes.
     *   **CRUD Actions**: Direct interfaces to Add, Edit, and Delete records. Includes full options to customize active color palette, select logo text, write subheadings, update open-to-work statuses, edit tagline typing lines, and place external links dynamically.
+    *   **Thumbnail Uploads**: File selector with image previews and validation (PNG/JPEG/WEBP under 5MB) integrated directly into the project form, automatically synchronizing with backend disk storage.
     *   **CV Upload Dropzone**: Interactive drag-and-drop file uploader supporting dragover neon border glows, file constraints validation (PDF, <5MB), and immediate backend synchronization.
-    *   **Chat Logs & Analytics**: Interfaces to view active chat sessions, user question logs, and AI usage details.
+    *   **AI Chat Dashboard Analytics**: Rich analytics showing today's and all-time token and request usage, active vs inactive session ratios, and cumulative session growth charts. Includes a searchable and sortable session breakdown usage table.
     *   **Custom Delete Dialogue**: CLI terminal-themed warning confirmation dialog (`rm -rf ./{type}/{item}`).
     *   **Transactional Toasts**: Active operation states reported via `sonner` toasts.
+    *   **verbatimModuleSyntax Support**: Employs strict type-only imports (`import type`) for interfaces and definitions to guarantee smooth compilation under verbatim module syntax rules.
 
 ### 2.3 Public Client Portfolio (`client/`)
-*   Fetches real-time projects, experiences, skills, education, settings, taglines, links, and stats from the MongoDB database, replacing static data configurations.
+*   Fetches real-time projects, experiences, skills, education, currently learning, settings, taglines, links, and stats from the MongoDB database, replacing static data configurations.
+*   **Redesigned Projects Grid**: Showcases projects inside a responsive grid layout using cover cards, aspect-ratio matching, image lazy-loading, and interactive zoom and border highlights.
+*   **Centered Project Modal**: Displays complete details (large thumbnail image, description parsed as Markdown, tags list, live demo, and source links) in a professional dialog that closes via Escape key or backdrop clicks.
 *   **Dynamic Layout & Placements**: Displays custom-placed links on the Hero, Footer, or Contact section dynamically. Typing animations render tagline punch lines dynamically.
 *   **Dynamic Stats/Figures Grid**: Renders real-time statistics (labels, values, custom tooltips) sorted by rank Order.
 *   **Dynamic CV Download**: Queries current upload status and enables direct attachment downloads with standard target `_blank` browser behaviors, showing a styled, disabled state when missing.
 *   **AI Chat Assistant**: Fixed bottom-right chatbot widget offering suggested questions, real-time developer info lookup, and error status representation.
 *   **Color Vibrancy Themes**: Applies one of 5 select vibes (`matrix`, `dracula`, `nordic`, `sunset`, `amber`) dynamically as HSL CSS variables throughout background colors, buttons, hover states, and animations.
+
 
 ---
 

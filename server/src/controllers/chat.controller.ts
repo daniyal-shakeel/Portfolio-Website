@@ -12,7 +12,7 @@ export class ChatController {
         return;
       }
 
-      const cookieSessionId = req.cookies?.__dca_chat_session;
+      const cookieSessionId = req.cookies?.__pw_chat_session;
       const bodySessionId = req.body.sessionId;
 
       if (cookieSessionId && bodySessionId && bodySessionId !== cookieSessionId) {
@@ -33,7 +33,7 @@ export class ChatController {
       }
 
       if (!cookieSessionId) {
-        res.cookie("__dca_chat_session", sessionId, {
+        res.cookie("__pw_chat_session", sessionId, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: "strict",
@@ -44,7 +44,7 @@ export class ChatController {
       const { message } = result.data;
       const tokensUsedToday = await ChatService.getSessionTokensUsed(sessionId);
       
-      const defaultDailyLimit = 100000;
+      const defaultDailyLimit = 10000;
       const sessionLimit = Math.floor(defaultDailyLimit / 3);
 
       if (tokensUsedToday >= sessionLimit) {
@@ -77,7 +77,7 @@ export class ChatController {
 
   static async getSessionStatus(req: Request, res: Response): Promise<void> {
     try {
-      const cookieSessionId = req.cookies?.__dca_chat_session;
+      const cookieSessionId = req.cookies?.__pw_chat_session;
       const querySessionId = req.query.sessionId as string;
 
       if (cookieSessionId && querySessionId && querySessionId !== cookieSessionId) {
@@ -98,7 +98,7 @@ export class ChatController {
       }
 
       if (!cookieSessionId) {
-        res.cookie("__dca_chat_session", sessionId, {
+        res.cookie("__pw_chat_session", sessionId, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: "strict",
@@ -107,7 +107,7 @@ export class ChatController {
       }
 
       const tokensUsedToday = await ChatService.getSessionTokensUsed(sessionId);
-      const sessionLimit = Math.floor(100000 / 3);
+      const sessionLimit = Math.floor(10000 / 3);
 
       res.status(200).json({
         usage: tokensUsedToday,
@@ -120,7 +120,7 @@ export class ChatController {
 
   static async createSession(req: Request, res: Response): Promise<void> {
     try {
-      const cookieSessionId = req.cookies?.__dca_chat_session;
+      const cookieSessionId = req.cookies?.__pw_chat_session;
       if (cookieSessionId) {
         const isValid = await ChatService.isValidSession(cookieSessionId);
         if (isValid) {
@@ -131,7 +131,7 @@ export class ChatController {
 
       const sessionId = await ChatService.createSession();
 
-      res.cookie("__dca_chat_session", sessionId, {
+      res.cookie("__pw_chat_session", sessionId, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",

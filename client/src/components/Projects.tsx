@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { Star, ExternalLink } from "lucide-react";
+import { Star, ExternalLink, X, Github, Globe } from "lucide-react";
 import { toast } from "sonner";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 interface Project {
   _id: string;
@@ -11,6 +13,7 @@ interface Project {
   demo?: string;
   featured?: boolean;
   longDescription?: string;
+  thumbnail?: string;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
@@ -27,6 +30,7 @@ const handleDemoSoon = (e: React.MouseEvent) => {
 
 const Projects = () => {
   const [projectsList, setProjectsList] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -34,16 +38,37 @@ const Projects = () => {
         const res = await fetch(`${API_BASE_URL}/api/projects`);
         if (res.ok) {
           const data = await res.json();
-          setProjectsList(data);
+          const sorted = [...data].sort((a: Project, b: Project) => {
+            const aFeatured = !!a.featured;
+            const bFeatured = !!b.featured;
+            if (aFeatured && !bFeatured) return -1;
+            if (!aFeatured && bFeatured) return 1;
+            return 0;
+          });
+          setProjectsList(sorted);
         }
       } catch (err) {
+        console.error(err);
       }
     };
     fetchProjects();
   }, []);
 
-  const featured = projectsList.find((p) => p.featured);
-  const secondary = projectsList.filter((p) => !p.featured);
+  useEffect(() => {
+    if (!selectedProject) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedProject(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedProject]);
+
+  const renderMarkdown = (text: string) => {
+    const rawHtml = marked.parse(text) as string;
+    return { __html: DOMPurify.sanitize(rawHtml) };
+  };
 
   return (
     <section id="projects" className="py-20">
@@ -52,61 +77,155 @@ const Projects = () => {
           <span className="text-muted-foreground">$</span> ls -la ./projects
         </h2>
 
-        {featured && (
-          <div className="bg-card border border-primary/30 rounded-lg p-8 card-glow">
-            <div className="flex items-center gap-2 mb-3">
-              <Star size={18} className="text-neon-green" fill="currentColor" />
-              <h3 className="text-xl font-bold text-foreground">{featured.name}</h3>
-            </div>
-            <p className="text-muted-foreground text-sm italic mb-4">{featured.description}</p>
-            {featured.longDescription && (
-              <pre className="text-muted-foreground text-xs font-mono whitespace-pre-wrap leading-relaxed mb-4">
-                {featured.longDescription}
-              </pre>
-            )}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {featured.tags.map((tag) => (
-                <span key={tag} className="bg-muted text-foreground text-xs font-mono px-2.5 py-1 rounded border border-border pill-glow transition-all">
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-3">
-              <a href={featured.github} target="_blank" rel="noopener noreferrer" onClick={featured.github === "#" ? handleRepoSoon : undefined} className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
-                View on GitHub <ExternalLink size={14} />
-              </a>
-              {featured.demo && (
-                <a href={featured.demo} target="_blank" rel="noopener noreferrer" onClick={featured.demo === "#" ? handleDemoSoon : undefined} className="flex items-center gap-2 border border-border text-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:border-primary/50 transition-colors">
-                  Live Demo
-                </a>
-              )}
-            </div>
-          </div>
-        )}
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {secondary.map((project) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {projectsList.map((project) => (
             <div
               key={project._id}
-              className="bg-card border border-border rounded-lg p-5 card-glow transition-all duration-300 flex flex-col"
+              onClick={() => setSelectedProject(project)}
+              className="group relative flex flex-col bg-card border border-border rounded-xl overflow-hidden cursor-pointer transition-all duration-500 hover:-translate-y-2 hover:border-primary/40 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:hover:shadow-[0_8px_30px_rgba(var(--primary),0.08)] card-glow"
             >
-              <h3 className="text-foreground font-semibold text-sm mb-1">{project.name}</h3>
-              <p className="text-muted-foreground text-xs italic mb-4 flex-1">{project.description}</p>
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {project.tags.map((tag) => (
-                  <span key={tag} className="bg-muted text-muted-foreground text-xs font-mono px-2 py-0.5 rounded border border-border">
-                    {tag}
-                  </span>
-                ))}
+              <div className="relative aspect-video w-full overflow-hidden bg-muted border-b border-border">
+                {project.thumbnail ? (
+                  <img
+                    src={project.thumbnail.startsWith("http") ? project.thumbnail : `${API_BASE_URL}${project.thumbnail}`}
+                    alt={project.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
+                    <span className="text-xs font-mono text-muted-foreground/60">[no_preview_available]</span>
+                  </div>
+                )}
+                {project.featured && (
+                  <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-md border border-border/80 px-2 py-1 rounded-md flex items-center gap-1.5 shadow-sm">
+                    <Star size={12} className="text-neon-green" fill="currentColor" />
+                    <span className="text-[10px] font-bold text-foreground font-mono">PRIMARY</span>
+                  </div>
+                )}
               </div>
-              <a href={project.github} target="_blank" rel="noopener noreferrer" onClick={project.github === "#" ? handleRepoSoon : undefined} className="text-neon-green text-xs font-mono hover:underline flex items-center gap-1">
-                View Source <ExternalLink size={11} />
-              </a>
+
+              <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+                    {project.name}
+                  </h3>
+                  <p className="text-muted-foreground text-xs leading-relaxed line-clamp-3">
+                    {project.description}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 pt-2">
+                  {project.tags.slice(0, 3).map((tag) => (
+                    <span key={tag} className="bg-muted text-foreground text-[10px] font-mono px-2 py-0.5 rounded border border-border/60">
+                      {tag}
+                    </span>
+                  ))}
+                  {project.tags.length > 3 && (
+                    <span className="text-muted-foreground text-[10px] font-mono px-1 py-0.5">
+                      +{project.tags.length - 3} more
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           ))}
         </div>
 
+        {projectsList.length === 0 && (
+          <div className="text-center py-10 text-xs text-muted-foreground">No projects found.</div>
+        )}
       </div>
+
+      {selectedProject && (
+        <div
+          onClick={() => setSelectedProject(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md transition-opacity duration-300 animate-fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative bg-card border border-border rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto flex flex-col animate-fade-in-up"
+          >
+            <button
+              onClick={() => setSelectedProject(null)}
+              className="absolute top-4 right-4 z-10 bg-background/60 hover:bg-background/90 text-foreground hover:text-primary p-2 rounded-full border border-border/80 transition-all cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="relative aspect-video w-full overflow-hidden bg-muted border-b border-border">
+              {selectedProject.thumbnail ? (
+                <img
+                  src={selectedProject.thumbnail.startsWith("http") ? selectedProject.thumbnail : `${API_BASE_URL}${selectedProject.thumbnail}`}
+                  alt={selectedProject.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary/15 to-secondary/15 flex items-center justify-center">
+                  <span className="text-sm font-mono text-muted-foreground/60">[no_preview_available]</span>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 md:p-8 space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    {selectedProject.featured && (
+                      <Star size={18} className="text-neon-green" fill="currentColor" />
+                    )}
+                    <h3 className="text-2xl font-bold text-foreground">{selectedProject.name}</h3>
+                  </div>
+                  <p className="text-muted-foreground text-xs italic font-mono">{selectedProject.description}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {selectedProject.tags.map((tag) => (
+                  <span key={tag} className="bg-muted text-foreground text-xs font-mono px-2.5 py-1 rounded border border-border/80 pill-glow transition-all">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              {selectedProject.longDescription && (
+                <div className="border-t border-border/60 pt-6 space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-primary font-mono">Project Breakdown</h4>
+                  <div
+                    className="markdown-content text-muted-foreground text-xs font-mono leading-relaxed space-y-2"
+                    dangerouslySetInnerHTML={renderMarkdown(selectedProject.longDescription)}
+                  />
+                </div>
+              )}
+
+              <div className="flex flex-wrap gap-3 pt-4 border-t border-border/60">
+                <a
+                  href={selectedProject.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={selectedProject.github === "#" ? handleRepoSoon : undefined}
+                  className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-xs font-bold hover:opacity-90 transition-opacity"
+                >
+                  <Github size={14} />
+                  <span>View Source</span>
+                </a>
+                {selectedProject.demo && (
+                  <a
+                    href={selectedProject.demo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={selectedProject.demo === "#" ? handleDemoSoon : undefined}
+                    className="flex items-center gap-2 border border-border hover:border-primary/50 text-foreground px-5 py-2.5 rounded-lg text-xs font-bold transition-colors"
+                  >
+                    <Globe size={14} />
+                    <span>Live Demo</span>
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

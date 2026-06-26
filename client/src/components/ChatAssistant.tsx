@@ -29,10 +29,10 @@ const ChatAssistant = () => {
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [usage, setUsage] = useState<number>(() => {
-    return Number(localStorage.getItem("__dca_chat_usage") || "0");
+    return Number(localStorage.getItem("__pw_chat_usage") || "0");
   });
   const [limit, setLimit] = useState<number>(() => {
-    return Number(localStorage.getItem("__dca_chat_limit") || "33333");
+    return Number(localStorage.getItem("__pw_chat_limit") || "3333");
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -40,9 +40,9 @@ const ChatAssistant = () => {
   useEffect(() => {
     const initSession = async () => {
       try {
-        let sessionId = localStorage.getItem("__dca_chat_session");
+        let sessionId = localStorage.getItem("__pw_chat_session");
         let sessionValid = false;
-        let data = { usage: Number(localStorage.getItem("__dca_chat_usage") || "0"), limit: Number(localStorage.getItem("__dca_chat_limit") || "33333") };
+        let data = { usage: Number(localStorage.getItem("__pw_chat_usage") || "0"), limit: Number(localStorage.getItem("__pw_chat_limit") || "3333") };
 
         if (sessionId) {
           const res = await fetch(`${API_BASE_URL}/api/chat/session?sessionId=${sessionId}`, {
@@ -52,9 +52,9 @@ const ChatAssistant = () => {
             data = await res.json();
             sessionValid = true;
           } else {
-            localStorage.removeItem("__dca_chat_session");
-            localStorage.removeItem("__dca_chat_usage");
-            localStorage.removeItem("__dca_chat_limit");
+            localStorage.removeItem("__pw_chat_session");
+            localStorage.removeItem("__pw_chat_usage");
+            localStorage.removeItem("__pw_chat_limit");
           }
         }
 
@@ -68,7 +68,7 @@ const ChatAssistant = () => {
             const createData = await createRes.json();
             sessionId = createData.sessionId;
             if (sessionId) {
-              localStorage.setItem("__dca_chat_session", sessionId);
+              localStorage.setItem("__pw_chat_session", sessionId);
               const statusRes = await fetch(`${API_BASE_URL}/api/chat/session?sessionId=${sessionId}`, {
                 credentials: "include"
               });
@@ -80,9 +80,9 @@ const ChatAssistant = () => {
         }
 
         setUsage(data.usage || 0);
-        setLimit(data.limit || 33333);
-        localStorage.setItem("__dca_chat_usage", String(data.usage || 0));
-        localStorage.setItem("__dca_chat_limit", String(data.limit || 33333));
+        setLimit(data.limit || 3333);
+        localStorage.setItem("__pw_chat_usage", String(data.usage || 0));
+        localStorage.setItem("__pw_chat_limit", String(data.limit || 3333));
       } catch (err) {
         console.error(err);
       }
@@ -99,7 +99,7 @@ const ChatAssistant = () => {
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || loading) return;
 
-    const sessionId = localStorage.getItem("__dca_chat_session");
+    const sessionId = localStorage.getItem("__pw_chat_session");
     if (!sessionId) {
       setMessages([...messages, { role: "assistant", content: "Session Error: No active chat session found. Please refresh the page.", isError: true, recommendations: [] }]);
       return;
@@ -137,11 +137,11 @@ const ChatAssistant = () => {
         setMessages([...newMessages, { role: "assistant", content: friendlyError, isError: true, recommendations: [] }]);
         if (data.usage !== undefined) {
           setUsage(data.usage);
-          localStorage.setItem("__dca_chat_usage", String(data.usage));
+          localStorage.setItem("__pw_chat_usage", String(data.usage));
         }
         if (data.limit !== undefined) {
           setLimit(data.limit);
-          localStorage.setItem("__dca_chat_limit", String(data.limit));
+          localStorage.setItem("__pw_chat_limit", String(data.limit));
         }
         return;
       }
@@ -150,11 +150,11 @@ const ChatAssistant = () => {
       setMessages([...newMessages, { role: "assistant", content: data.reply, recommendations: recs }]);
       
       const newUsage = data.sessionUsageToday || 0;
-      const newLimit = data.sessionLimit || 33333;
+      const newLimit = data.sessionLimit || 3333;
       setUsage(newUsage);
       setLimit(newLimit);
-      localStorage.setItem("__dca_chat_usage", String(newUsage));
-      localStorage.setItem("__dca_chat_limit", String(newLimit));
+      localStorage.setItem("__pw_chat_usage", String(newUsage));
+      localStorage.setItem("__pw_chat_limit", String(newLimit));
     } catch (error) {
       setMessages([...newMessages, { role: "assistant", content: "Connection Error: Failed to connect to AI assistant. Please check your network and try again.", isError: true, recommendations: [] }]);
     } finally {

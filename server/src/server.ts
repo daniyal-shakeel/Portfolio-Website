@@ -1,4 +1,5 @@
 import express from "express";
+import path from "path";
 import cors from "cors";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
@@ -19,12 +20,17 @@ import linkRouter from "./routes/link.routes.js";
 import statRouter from "./routes/stat.routes.js";
 import cvRouter from "./routes/cv.routes.js";
 import chatRouter from "./routes/chat.routes.js";
+import learningRouter from "./routes/learning.routes.js";
 
 
 
 const app = express();
 
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 
 const origins = config.corsOrigin.split(",").map((o) => o.trim());
 app.use(
@@ -47,6 +53,7 @@ app.use(cookieParser());
 app.use(mongoSanitize());
 app.use(globalLimiter);
 app.use(sanitizeMiddleware);
+app.use("/project_thumbnails", express.static(path.join(process.cwd(), "project_thumbnails")));
 
 app.use("/health", healthRouter);
 app.use("/api/auth", authRouter);
@@ -60,6 +67,7 @@ app.use("/api/links", linkRouter);
 app.use("/api/stats", statRouter);
 app.use("/api/cv", cvRouter);
 app.use("/api/chat", chatRouter);
+app.use("/api/learning", learningRouter);
 
 
 
