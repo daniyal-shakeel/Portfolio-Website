@@ -34,7 +34,7 @@ The workspace is organized as follows:
 *   **Authentication Portal**: Monospace developer terminal login prompt validating credentials against backend server configurations.
 *   **Management Panel**:
     *   **Responsive Sidebar**: Professional collapsible navigation sidebar for desktop and mobile devices, with active item highlight and tab persistence (`__pw_admin_active_tab`) across page refreshes.
-    *   **CRUD Actions**: Direct interfaces to Add, Edit, and Delete records. Includes full options to customize active color palette, select logo text, write subheadings, update open-to-work statuses, edit tagline typing lines, and place external links dynamically.
+    *   **CRUD Actions**: Direct interfaces to Add, Edit, and Delete records. Includes full options to customize active color palette, select logo text, write subheadings, update open-to-work statuses, edit tagline typing lines, and place external links dynamically. Supports tagging projects as private (hiding GitHub inputs).
     *   **Thumbnail Uploads**: File selector with image previews and validation (PNG/JPEG/WEBP under 5MB) integrated directly into the project form, automatically synchronizing with backend disk storage.
     *   **CV Upload Dropzone**: Interactive drag-and-drop file uploader supporting dragover neon border glows, file constraints validation (PDF, <5MB), and immediate backend synchronization.
     *   **AI Chat Dashboard Analytics**: Rich analytics showing today's and all-time token and request usage, active vs inactive session ratios, and cumulative session growth charts. Includes a searchable and sortable session breakdown usage table.
@@ -45,7 +45,8 @@ The workspace is organized as follows:
 ### 2.3 Public Client Portfolio (`client/`)
 *   Fetches real-time projects, experiences, skills, education, currently learning, settings, taglines, links, and stats from the MongoDB database, replacing static data configurations.
 *   **Redesigned Projects Grid**: Showcases projects inside a responsive grid layout using cover cards, aspect-ratio matching, image lazy-loading, and interactive zoom and border highlights.
-*   **Centered Project Modal**: Displays complete details (large thumbnail image, description parsed as Markdown, tags list, live demo, and source links) in a professional dialog that closes via Escape key or backdrop clicks.
+*   **Centered Project Modal**: Displays complete details (large thumbnail image, description parsed as Markdown, tags list, live demo, and source links) in a professional dialog that closes via Escape key or backdrop clicks. Supports displaying custom contacting details for private repositories and a "See Full Image" click action.
+*   **Consistent Preview Images**: Standardizes missing project thumbnails to display Vite fallback placeholder graphics.
 *   **Dynamic Layout & Placements**: Displays custom-placed links on the Hero, Footer, or Contact section dynamically. Typing animations render tagline punch lines dynamically.
 *   **Dynamic Stats/Figures Grid**: Renders real-time statistics (labels, values, custom tooltips) sorted by rank Order.
 *   **Dynamic CV Download**: Queries current upload status and enables direct attachment downloads with standard target `_blank` browser behaviors, showing a styled, disabled state when missing.

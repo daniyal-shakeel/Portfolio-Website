@@ -39,6 +39,10 @@ const Hero = ({ settings, taglines, links }: HeroProps) => {
           const data = await statsRes.json();
           setStatsList(data);
         }
+      } catch (err) {
+      }
+
+      try {
         const cvRes = await fetch(`${API_BASE_URL}/api/cv/status`);
         if (cvRes.ok) {
           const data = await cvRes.json();

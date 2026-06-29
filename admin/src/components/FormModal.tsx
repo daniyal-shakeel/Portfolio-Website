@@ -21,6 +21,8 @@ interface FormModalProps {
   setProjectDemo: (val: string) => void;
   projectFeatured: boolean;
   setProjectFeatured: (val: boolean) => void;
+  projectIsPrivate: boolean;
+  setProjectIsPrivate: (val: boolean) => void;
   projectLongDesc: string;
   setProjectLongDesc: (val: string) => void;
   projectThumbnail: string;
@@ -109,6 +111,8 @@ export const FormModal: React.FC<FormModalProps> = ({
   setProjectDemo,
   projectFeatured,
   setProjectFeatured,
+  projectIsPrivate,
+  setProjectIsPrivate,
   projectLongDesc,
   setProjectLongDesc,
   projectThumbnail,
@@ -226,17 +230,19 @@ export const FormModal: React.FC<FormModalProps> = ({
                   className="w-full bg-muted border border-border rounded px-3 py-2 text-xs focus:outline-none focus:border-neon-green"
                 />
               </div>
-              <div className="space-y-1">
-                <label className="text-[11px] text-muted-foreground">GitHub URL</label>
-                <input
-                  type="text"
-                  required
-                  value={projectGithub}
-                  onChange={(e) => setProjectGithub(e.target.value)}
-                  placeholder="e.g. https://github.com/daniyal-shakeel/nextfit"
-                  className="w-full bg-muted border border-border rounded px-3 py-2 text-xs focus:outline-none focus:border-neon-green"
-                />
-              </div>
+              {!projectIsPrivate && (
+                <div className="space-y-1">
+                  <label className="text-[11px] text-muted-foreground">GitHub URL</label>
+                  <input
+                    type="text"
+                    required
+                    value={projectGithub}
+                    onChange={(e) => setProjectGithub(e.target.value)}
+                    placeholder="e.g. https://github.com/daniyal-shakeel/nextfit"
+                    className="w-full bg-muted border border-border rounded px-3 py-2 text-xs focus:outline-none focus:border-neon-green"
+                  />
+                </div>
+              )}
               <div className="space-y-1">
                 <label className="text-[11px] text-muted-foreground">Demo URL (Optional)</label>
                 <input
@@ -247,28 +253,58 @@ export const FormModal: React.FC<FormModalProps> = ({
                   className="w-full bg-muted border border-border rounded px-3 py-2 text-xs focus:outline-none focus:border-neon-green"
                 />
               </div>
-              <div className="flex items-center pt-2">
-                <label htmlFor="featured" className="flex items-center gap-3 cursor-pointer select-none group">
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      id="featured"
-                      checked={projectFeatured}
-                      onChange={(e) => setProjectFeatured(e.target.checked)}
-                      className="sr-only"
-                    />
-                    <div className={`w-8 h-4 rounded-full transition-colors duration-300 border ${
-                      projectFeatured ? "bg-primary/20 border-primary" : "bg-muted border-border group-hover:border-muted-foreground/60"
-                    }`}>
-                      <div className={`w-2.5 h-2.5 rounded-full absolute top-[3px] transition-all duration-300 ${
-                        projectFeatured ? "bg-primary left-[19px]" : "bg-muted-foreground left-[3px]"
-                      }`} />
+              <div className="flex flex-col gap-2 pt-2">
+                <div className="flex items-center">
+                  <label htmlFor="featured" className="flex items-center gap-3 cursor-pointer select-none group">
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        id="featured"
+                        checked={projectFeatured}
+                        onChange={(e) => setProjectFeatured(e.target.checked)}
+                        className="sr-only"
+                      />
+                      <div className={`w-8 h-4 rounded-full transition-colors duration-300 border ${
+                        projectFeatured ? "bg-primary/20 border-primary" : "bg-muted border-border group-hover:border-muted-foreground/60"
+                      }`}>
+                        <div className={`w-2.5 h-2.5 rounded-full absolute top-[3px] transition-all duration-300 ${
+                          projectFeatured ? "bg-primary left-[19px]" : "bg-muted-foreground left-[3px]"
+                        }`} />
+                      </div>
                     </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors font-mono">
-                    Feature this project on top
-                  </span>
-                </label>
+                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors font-mono">
+                      Feature this project on top
+                    </span>
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <label htmlFor="isPrivate" className="flex items-center gap-3 cursor-pointer select-none group">
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        id="isPrivate"
+                        checked={projectIsPrivate}
+                        onChange={(e) => {
+                          setProjectIsPrivate(e.target.checked);
+                          if (e.target.checked) {
+                            setProjectGithub("");
+                          }
+                        }}
+                        className="sr-only"
+                      />
+                      <div className={`w-8 h-4 rounded-full transition-colors duration-300 border ${
+                        projectIsPrivate ? "bg-primary/20 border-primary" : "bg-muted border-border group-hover:border-muted-foreground/60"
+                      }`}>
+                        <div className={`w-2.5 h-2.5 rounded-full absolute top-[3px] transition-all duration-300 ${
+                          projectIsPrivate ? "bg-primary left-[19px]" : "bg-muted-foreground left-[3px]"
+                        }`} />
+                      </div>
+                    </div>
+                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors font-mono">
+                      Is this repository private?
+                    </span>
+                  </label>
+                </div>
               </div>
               <div className="space-y-1">
                 <label className="text-[11px] text-muted-foreground">Project Thumbnail</label>

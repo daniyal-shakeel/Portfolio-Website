@@ -9,14 +9,20 @@ interface Project {
   name: string;
   description: string;
   tags: string[];
-  github: string;
+  github?: string;
   demo?: string;
   featured?: boolean;
   longDescription?: string;
   thumbnail?: string;
+  isPrivate?: boolean;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
+const getThumbnailUrl = (thumbnail?: string) => {
+  if (!thumbnail) return "/placeholder.svg";
+  return thumbnail.startsWith("http") ? thumbnail : `${API_BASE_URL}${thumbnail}`;
+};
 
 const handleRepoSoon = (e: React.MouseEvent) => {
   e.preventDefault();
@@ -85,18 +91,12 @@ const Projects = () => {
               className="group relative flex flex-col bg-card border border-border rounded-xl overflow-hidden cursor-pointer transition-all duration-500 hover:-translate-y-2 hover:border-primary/40 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:hover:shadow-[0_8px_30px_rgba(var(--primary),0.08)] card-glow"
             >
               <div className="relative aspect-video w-full overflow-hidden bg-muted border-b border-border">
-                {project.thumbnail ? (
-                  <img
-                    src={project.thumbnail.startsWith("http") ? project.thumbnail : `${API_BASE_URL}${project.thumbnail}`}
-                    alt={project.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
-                    <span className="text-xs font-mono text-muted-foreground/60">[no_preview_available]</span>
-                  </div>
-                )}
+                <img
+                  src={getThumbnailUrl(project.thumbnail)}
+                  alt={project.name}
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                />
                 {project.featured && (
                   <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-md border border-border/80 px-2 py-1 rounded-md flex items-center gap-1.5 shadow-sm">
                     <Star size={12} className="text-neon-green" fill="currentColor" />
@@ -109,6 +109,11 @@ const Projects = () => {
                 <div className="space-y-2">
                   <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
                     {project.name}
+                    {project.isPrivate && (
+                      <span className="bg-red-950/40 border border-red-900/50 text-red-400 text-[9px] font-mono px-1.5 py-0.5 rounded">
+                        PRIVATE
+                      </span>
+                    )}
                   </h3>
                   <p className="text-muted-foreground text-xs leading-relaxed line-clamp-3">
                     {project.description}
@@ -153,18 +158,24 @@ const Projects = () => {
               <X size={16} />
             </button>
 
+            <div className="flex justify-between items-center px-6 py-3 bg-muted/20 border-b border-border/40">
+              <a
+                href={getThumbnailUrl(selectedProject.thumbnail)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-mono text-neon-cyan hover:underline flex items-center gap-1.5 cursor-pointer"
+              >
+                <ExternalLink size={12} />
+                See Full Image
+              </a>
+            </div>
+
             <div className="relative aspect-video w-full overflow-hidden bg-muted border-b border-border">
-              {selectedProject.thumbnail ? (
-                <img
-                  src={selectedProject.thumbnail.startsWith("http") ? selectedProject.thumbnail : `${API_BASE_URL}${selectedProject.thumbnail}`}
-                  alt={selectedProject.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-primary/15 to-secondary/15 flex items-center justify-center">
-                  <span className="text-sm font-mono text-muted-foreground/60">[no_preview_available]</span>
-                </div>
-              )}
+              <img
+                src={getThumbnailUrl(selectedProject.thumbnail)}
+                alt={selectedProject.name}
+                className="w-full h-full object-cover"
+              />
             </div>
 
             <div className="p-6 md:p-8 space-y-6">
@@ -174,7 +185,14 @@ const Projects = () => {
                     {selectedProject.featured && (
                       <Star size={18} className="text-neon-green" fill="currentColor" />
                     )}
-                    <h3 className="text-2xl font-bold text-foreground">{selectedProject.name}</h3>
+                    <h3 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                      {selectedProject.name}
+                      {selectedProject.isPrivate && (
+                        <span className="bg-red-950/40 border border-red-900/50 text-red-400 text-[10px] font-mono px-2 py-0.5 rounded">
+                          PRIVATE
+                        </span>
+                      )}
+                    </h3>
                   </div>
                   <p className="text-muted-foreground text-xs italic font-mono">{selectedProject.description}</p>
                 </div>
@@ -199,16 +217,25 @@ const Projects = () => {
               )}
 
               <div className="flex flex-wrap gap-3 pt-4 border-t border-border/60">
-                <a
-                  href={selectedProject.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={selectedProject.github === "#" ? handleRepoSoon : undefined}
-                  className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-xs font-bold hover:opacity-90 transition-opacity"
-                >
-                  <Github size={14} />
-                  <span>View Source</span>
-                </a>
+                {selectedProject.isPrivate ? (
+                  <div className="w-full bg-muted/30 border border-border/60 rounded-lg p-4 space-y-1">
+                    <div className="text-xs font-bold text-foreground font-mono">Private Repository</div>
+                    <div className="text-[11px] text-muted-foreground italic font-mono">
+                      Ask the developer to view the source code and give email direct link.
+                    </div>
+                  </div>
+                ) : (
+                  <a
+                    href={selectedProject.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={selectedProject.github === "#" ? handleRepoSoon : undefined}
+                    className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-xs font-bold hover:opacity-90 transition-opacity"
+                  >
+                    <Github size={14} />
+                    <span>View Source</span>
+                  </a>
+                )}
                 {selectedProject.demo && (
                   <a
                     href={selectedProject.demo}

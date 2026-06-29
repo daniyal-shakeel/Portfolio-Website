@@ -47,9 +47,13 @@ export const ProjectsTab: React.FC<ProjectsTabProps> = ({
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-border/50 pt-3 text-[11px]">
-            <a href={p.github} target="_blank" rel="noreferrer" className="text-neon-cyan hover:underline">
-              github.com/source
-            </a>
+            {p.isPrivate ? (
+              <span className="text-muted-foreground italic font-mono">Private Repository</span>
+            ) : (
+              <a href={p.github} target="_blank" rel="noreferrer" className="text-neon-cyan hover:underline">
+                github.com/source
+              </a>
+            )}
             <div className="flex items-center gap-2">
               <button
                 onClick={() => openEditForm(p, "projects")}

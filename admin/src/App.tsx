@@ -113,6 +113,7 @@ function App() {
   const [projectLongDesc, setProjectLongDesc] = useState("");
   const [projectThumbnail, setProjectThumbnail] = useState("");
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [projectIsPrivate, setProjectIsPrivate] = useState(false);
 
   const [expRole, setExpRole] = useState("");
   const [expCompany, setExpCompany] = useState("");
@@ -277,6 +278,7 @@ function App() {
     setProjectFeatured(false);
     setProjectLongDesc("");
     setProjectThumbnail("");
+    setProjectIsPrivate(false);
 
     setExpRole("");
     setExpCompany("");
@@ -325,6 +327,7 @@ function App() {
       setProjectFeatured(!!item.featured);
       setProjectLongDesc(item.longDescription || "");
       setProjectThumbnail(item.thumbnail || "");
+      setProjectIsPrivate(!!item.isPrivate);
     } else if (type === "experience") {
       setExpRole(item.role || "");
       setExpCompany(item.company || "");
@@ -374,11 +377,12 @@ function App() {
         name: projectName,
         description: projectDesc,
         tags: projectTags.split(",").map((t) => t.trim()).filter(Boolean),
-        github: projectGithub,
+        github: projectIsPrivate ? undefined : (projectGithub || undefined),
         demo: projectDemo || undefined,
         featured: projectFeatured,
         longDescription: projectLongDesc || undefined,
         thumbnail: projectThumbnail || undefined,
+        isPrivate: projectIsPrivate,
       };
     } else if (activeTab === "experience") {
       url = `${API_BASE_URL}/api/experience`;
@@ -821,6 +825,8 @@ function App() {
           uploadingThumbnail={uploadingThumbnail}
           handleThumbnailUpload={handleThumbnailUpload}
           API_BASE_URL={API_BASE_URL}
+          projectIsPrivate={projectIsPrivate}
+          setProjectIsPrivate={setProjectIsPrivate}
           expRole={expRole}
           setExpRole={setExpRole}
           expCompany={expCompany}

@@ -3,11 +3,12 @@ export interface Project {
   name: string;
   description: string;
   tags: string[];
-  github: string;
+  github?: string;
   demo?: string;
   featured?: boolean;
   longDescription?: string;
   thumbnail?: string;
+  isPrivate?: boolean;
 }
 
 export interface Experience {
