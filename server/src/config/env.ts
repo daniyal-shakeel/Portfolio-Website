@@ -16,8 +16,9 @@ export const config = {
   jwtSecret: process.env.JWT_SECRET || "",
   corsOrigin: process.env.CORS_ORIGIN || "",
   groqApiKey: process.env.GROQ_API_KEY || "",
+  groqModel: process.env.GROQ_MODEL || ""
 };
 
-if (!config.mongodbUri || !config.adminUsername || !config.adminPassword || !config.jwtSecret || !config.groqApiKey) {
+if (!config.mongodbUri || !config.adminUsername || !config.adminPassword || !config.jwtSecret || !config.groqApiKey || !config.groqModel) {
   throw new Error("Missing mandatory environment configurations.");
 }
