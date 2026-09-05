@@ -18,17 +18,19 @@ The workspace is organized as follows:
 ## 2. Features
 
 ### 2.1 Backend Server (`server/`)
-*   **Database Management**: Connects to MongoDB, executing automated seeding on first start to load initial data profiles (projects, experiences, skills, education, currently learning, settings, taglines, links, and stats) if the collections are empty.
+*   **Vercel Serverless Architecture**: Fully compatible with Vercel Serverless functions (`@vercel/node`) while maintaining standard local Express development execution (`npm run dev`). Automatically sets Express `trust proxy` and provides cached Mongoose connections across serverless lambda invocations.
+*   **Database Management**: Connects to MongoDB with connection caching and idempotent initialization on cold starts to load initial data profiles (projects, experiences, skills, education, currently learning, settings, taglines, links, and stats) only when collections are empty without touching or overwriting existing production data.
 *   **API Routes**: Exposes REST endpoints for CRUD operations on projects, experiences, skills, education, currently learning, settings, taglines, links, and stats (figures).
-*   **Thumbnail Storage**: Integrates a `multipart/form-data` upload endpoint (`/api/projects/upload`) using `multer` that saves project thumbnails locally on disk in `server/project_thumbnails/`. Automatically cleans up old or deleted thumbnail files from the filesystem.
+*   **Persistent Cloudinary Thumbnail Storage**: Integrates a `multipart/form-data` upload endpoint (`/api/projects/upload`) using `multer.memoryStorage()` that streams project thumbnails directly to Cloudinary under the dedicated `portfolio-website` folder. Automatically cleans up old or deleted thumbnail assets from Cloudinary without affecting unrelated files or folders.
 *   **AI Chat Assistant**: Handles AI queries at `/api/chat` with secure HTTP-only cookie-based session tracking, daily token limits, anti-tampering verification (comparing cookie session IDs against client payloads to block tampering), and database limit validation, plus logging `/api/chat/logs` and stats `/api/chat/stats`.
 *   **CV Document Upload**: Exposes a secure endpoint to upload PDF documents as base64 strings (`/api/cv/upload`) and stream downloads (`/api/cv/download`) to authorized users and visitors.
 *   **Security Layers**:
-    *   **Rate Limiting**: Restricts general traffic (100 requests per 15 mins) and brute-force login attempts (10 requests per 15 mins).
+    *   **Rate Limiting**: Restricts general traffic (500 requests per 15 mins) and brute-force login attempts (10 requests per 15 mins).
     *   **DDoS Prevention**: Implements payload size limits (10kb) on incoming JSON and URL-encoded bodies, with a specific exception of 5MB for CV document uploads.
     *   **NoSQL Injection Defense**: Uses `express-mongo-sanitize` to strip query operators from input keys.
     *   **XSS Protection**: Cleans inputs recursively using the `xss` library, and sets secure headers via `helmet`.
-*   **Authentication & Sessions**: Issues JWT tokens delivered as HTTP-only, secure, strict SameSite cookies (`__pw_admin_token`), with session validation (`/api/auth/verify`) and logout handlers.
+*   **Authentication & Sessions**: Issues JWT tokens delivered as HTTP-only, secure, strict SameSite cookies (`__pw_admin_token`) and supports Bearer token authentication headers, with session validation (`/api/auth/verify`) and logout handlers.
+
 
 ### 2.2 Admin Dashboard (`admin/`)
 *   **Authentication Portal**: Monospace developer terminal login prompt validating credentials against backend server configurations.
@@ -73,7 +75,13 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin
 JWT_SECRET=your_jwt_secret_key
 CORS_ORIGIN=http://localhost:5173,http://localhost:5174
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=openai/gpt-oss-120b
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
+
 
 #### Client Website:
 Create a file at `client/env/.env.development` (configured in gitignore) based on `client/env/.env.example`:
@@ -94,7 +102,8 @@ VITE_API_BASE_URL=http://localhost:5000
 ```bash
 cd server
 npm install
-npm run dev
+$env:NODE_OPTIONS = "--import `"data:text/javascript,import dns from 'node:dns'; dns.setServers(['8.8.8.8', '1.1.1.1']);`""
+>> npm start
 ```
 
 #### Run the Admin Dashboard:

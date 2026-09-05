@@ -1,4 +1,5 @@
 import { Project, IProject } from "../models/project.model.js";
+import { CloudinaryService } from "./cloudinary.service.js";
 import path from "path";
 import fs from "fs";
 
@@ -15,10 +16,13 @@ export class ProjectService {
   static async update(id: string, data: Partial<IProject>): Promise<IProject | null> {
     const existing = await Project.findById(id);
     if (existing && existing.thumbnail && data.thumbnail !== undefined && existing.thumbnail !== data.thumbnail) {
-      const filename = path.basename(existing.thumbnail);
-      const filePath = path.join(process.cwd(), "project_thumbnails", filename);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+      await CloudinaryService.deleteThumbnail(existing.thumbnail);
+      if (existing.thumbnail.startsWith("/project_thumbnails/")) {
+        const filename = path.basename(existing.thumbnail);
+        const filePath = path.join(process.cwd(), "project_thumbnails", filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
       }
     }
     return Project.findByIdAndUpdate(id, data, { new: true, runValidators: true });
@@ -27,12 +31,16 @@ export class ProjectService {
   static async delete(id: string): Promise<IProject | null> {
     const existing = await Project.findById(id);
     if (existing && existing.thumbnail) {
-      const filename = path.basename(existing.thumbnail);
-      const filePath = path.join(process.cwd(), "project_thumbnails", filename);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+      await CloudinaryService.deleteThumbnail(existing.thumbnail);
+      if (existing.thumbnail.startsWith("/project_thumbnails/")) {
+        const filename = path.basename(existing.thumbnail);
+        const filePath = path.join(process.cwd(), "project_thumbnails", filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
       }
     }
     return Project.findByIdAndDelete(id);
   }
 }
+

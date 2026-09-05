@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { ProjectService } from "../services/project.service.js";
+import { CloudinaryService } from "../services/cloudinary.service.js";
 
 export class ProjectController {
   static async getAll(req: Request, res: Response): Promise<void> {
@@ -52,10 +53,11 @@ export class ProjectController {
         res.status(400).json({ error: "No image file provided." });
         return;
       }
-      const relativePath = `/project_thumbnails/${req.file.filename}`;
-      res.status(200).json({ filePath: relativePath });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to upload thumbnail." });
+      const uploadResult = await CloudinaryService.uploadThumbnail(req.file.buffer);
+      res.status(200).json({ filePath: uploadResult.secure_url });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to upload thumbnail." });
     }
   }
 }
+

@@ -1,5 +1,4 @@
 import express from "express";
-import path from "path";
 import cors from "cors";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
@@ -22,9 +21,9 @@ import cvRouter from "./routes/cv.routes.js";
 import chatRouter from "./routes/chat.routes.js";
 import learningRouter from "./routes/learning.routes.js";
 
-
-
 const app = express();
+
+app.set("trust proxy", 1);
 
 app.use(
   helmet({
@@ -53,9 +52,18 @@ app.use(cookieParser());
 app.use(mongoSanitize());
 app.use(globalLimiter);
 app.use(sanitizeMiddleware);
-app.use("/project_thumbnails", express.static(path.join(process.cwd(), "project_thumbnails")));
 
 app.use("/health", healthRouter);
+
+app.use("/api", async (_req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    res.status(500).json({ error: "Database connection failure" });
+  }
+});
+
 app.use("/api/auth", authRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/experience", experienceRouter);
@@ -69,8 +77,6 @@ app.use("/api/cv", cvRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/learning", learningRouter);
 
-
-
 app.use((req, res) => {
   res.status(404).json({ error: "Endpoint not found" });
 });
@@ -79,8 +85,14 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ error: "An unexpected error occurred" });
 });
 
-connectDB().then(() => {
-  app.listen(config.port, () => {
-    console.log(`Server started successfully on port ${config.port}`);
+if (!process.env.VERCEL && process.env.NODE_ENV !== "test") {
+  connectDB().then(() => {
+    app.listen(config.port, () => {
+      console.log(`Server started successfully on port ${config.port}`);
+    });
   });
-});
+}
+
+export { app };
+export default app;
+

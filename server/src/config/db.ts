@@ -172,59 +172,125 @@ const initialLearning = [
 ];
 
 async function seedData(): Promise<void> {
-  const projectCount = await Project.countDocuments();
+  const [
+    projectCount,
+    expCount,
+    skillCount,
+    eduCount,
+    settingsCount,
+    taglineCount,
+    linkCount,
+    statCount,
+    learningCount
+  ] = await Promise.all([
+    Project.countDocuments(),
+    Experience.countDocuments(),
+    Skill.countDocuments(),
+    Education.countDocuments(),
+    Settings.countDocuments(),
+    Tagline.countDocuments(),
+    Link.countDocuments(),
+    Stat.countDocuments(),
+    Learning.countDocuments()
+  ]);
+
+  if (
+    projectCount > 0 &&
+    expCount > 0 &&
+    skillCount > 0 &&
+    eduCount > 0 &&
+    settingsCount > 0 &&
+    taglineCount > 0 &&
+    linkCount > 0 &&
+    statCount > 0 &&
+    learningCount > 0
+  ) {
+    return;
+  }
+
+  try {
+    const lockResult = await mongoose.connection.collection("_initialization_locks").updateOne(
+      { _id: "seed_lock" as any },
+      { $setOnInsert: { initializedAt: new Date() } },
+      { upsert: true }
+    );
+    if (!lockResult.upsertedCount) {
+      return;
+    }
+  } catch (error: any) {
+    if (error.code === 11000) {
+      return;
+    }
+    throw error;
+  }
+
   if (projectCount === 0) {
     await Project.insertMany(initialProjects);
   }
 
-  const expCount = await Experience.countDocuments();
   if (expCount === 0) {
     await Experience.insertMany(initialExperiences);
   }
 
-  const skillCount = await Skill.countDocuments();
   if (skillCount === 0) {
     await Skill.insertMany(initialSkills);
   }
 
-  const eduCount = await Education.countDocuments();
   if (eduCount === 0) {
     await Education.insertMany(initialEducation);
   }
 
-  const settingsCount = await Settings.countDocuments();
   if (settingsCount === 0) {
     await Settings.create(initialSettings);
   }
 
-  const taglineCount = await Tagline.countDocuments();
   if (taglineCount === 0) {
     await Tagline.insertMany(initialTaglines);
   }
 
-  const linkCount = await Link.countDocuments();
   if (linkCount === 0) {
     await Link.insertMany(initialLinks);
   }
 
-  const statCount = await Stat.countDocuments();
   if (statCount === 0) {
     await Stat.insertMany(initialStats);
   }
 
-  const learningCount = await Learning.countDocuments();
   if (learningCount === 0) {
     await Learning.insertMany(initialLearning);
   }
 }
 
+let cachedPromise: Promise<typeof mongoose> | null = null;
+let seedPromise: Promise<void> | null = null;
 
-export async function connectDB(): Promise<void> {
-  try {
-    await mongoose.connect(config.mongodbUri);
-    console.log("MongoDB connection established successfully");
-    await seedData();
-  } catch (error) {
-    process.exit(1);
+async function runSeed(): Promise<void> {
+  if (!seedPromise) {
+    seedPromise = seedData().catch((error) => {
+      seedPromise = null;
+      throw error;
+    });
   }
+  return seedPromise;
 }
+
+export async function connectDB(): Promise<typeof mongoose> {
+  if (mongoose.connection.readyState === 1) {
+    await runSeed();
+    return mongoose;
+  }
+
+  if (!cachedPromise) {
+    cachedPromise = mongoose.connect(config.mongodbUri).catch((error) => {
+      cachedPromise = null;
+      throw error;
+    });
+  }
+
+  const conn = await cachedPromise;
+  console.log("MongoDB connection established successfully");
+  await runSeed();
+  return conn;
+}
+
+
