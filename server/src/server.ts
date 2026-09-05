@@ -52,6 +52,7 @@ app.use("/health", healthRouter);
 
 app.use("/api", async (_req, res, next) => {
   try {
+    res.set("Cache-Control", "no-store");
     await connectDB();
     next();
   } catch (error) {
