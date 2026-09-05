@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import { default as helmet } from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import cookieParser from "cookie-parser";
 import { config } from "./config/env.js";
@@ -25,11 +24,7 @@ const app = express();
 
 app.set("trust proxy", 1);
 
-app.use(
-  helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" },
-  })
-);
+
 
 const origins = config.corsOrigin.split(",").map((o) => o.trim());
 app.use(
