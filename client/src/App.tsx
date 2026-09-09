@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { TerminalViewProvider } from "@/contexts/TerminalViewContext";
 import TopLoadingBar from "@/components/TopLoadingBar";
 import Index from "./pages/Index.tsx";
+import CvViewer from "./pages/CvViewer.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
             <TopLoadingBar />
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/cv" element={<CvViewer />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

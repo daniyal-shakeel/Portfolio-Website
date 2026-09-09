@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Github, Linkedin, Mail, ExternalLink } from "lucide-react";
 import { LINKEDIN_URL } from "@/lib/site";
 
@@ -195,13 +196,19 @@ const Hero = ({ settings, taglines, links }: HeroProps) => {
               ))}
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-4">
               <a
                 href="#projects"
                 className="bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity"
               >
                 View My Work
               </a>
+              <Link
+                to="/cv"
+                className="inline-flex items-center justify-center border border-border text-foreground px-6 py-3 rounded-lg font-semibold text-sm hover:border-primary/50 transition-colors"
+              >
+                View CV
+              </Link>
               {cvStatus.exists ? (
                 <a
                   href={`${API_BASE_URL}/api/cv/download`}

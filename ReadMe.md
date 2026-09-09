@@ -51,7 +51,7 @@ The workspace is organized as follows:
 *   **Consistent Preview Images**: Standardizes missing project thumbnails to display Vite fallback placeholder graphics.
 *   **Dynamic Layout & Placements**: Displays custom-placed links on the Hero, Footer, or Contact section dynamically. Typing animations render tagline punch lines dynamically.
 *   **Dynamic Stats/Figures Grid**: Renders real-time statistics (labels, values, custom tooltips) sorted by rank Order.
-*   **Dynamic CV Download**: Queries current upload status and enables direct attachment downloads with standard target `_blank` browser behaviors, showing a styled, disabled state when missing.
+*   **Dynamic CV Download & Dedicated CV Viewer**: Queries current upload status and enables direct attachment downloads with standard target `_blank` browser behaviors, showing a styled, disabled state when missing. Also provides a dedicated `/cv` document viewer page powered by `pdfjs-dist` featuring canvas rendering, zoom controls (in, out, fit-to-width reset), page navigation (previous, next, page indicators), fullscreen mode, and direct download, linked directly from an interactive "View CV" Hero CTA button.
 *   **AI Chat Assistant**: Fixed bottom-right chatbot widget offering suggested questions, real-time developer info lookup, and error status representation.
 *   **Color Vibrancy Themes**: Applies one of 5 select vibes (`matrix`, `dracula`, `nordic`, `sunset`, `amber`) dynamically as HSL CSS variables throughout background colors, buttons, hover states, and animations.
 
