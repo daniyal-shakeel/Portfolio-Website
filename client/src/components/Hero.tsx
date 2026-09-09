@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Github, Linkedin, Mail, ExternalLink } from "lucide-react";
 import { LINKEDIN_URL } from "@/lib/site";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const stats = [
   { label: "Total Projects", value: "18+", tooltip: null },
@@ -30,6 +31,7 @@ const Hero = ({ settings, taglines, links }: HeroProps) => {
   const [taglineIndex, setTaglineIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [statsList, setStatsList] = useState<any[]>([]);
+  const [loadingStats, setLoadingStats] = useState(true);
   const [cvStatus, setCvStatus] = useState<{ exists: boolean; filename?: string }>({ exists: false });
 
   useEffect(() => {
@@ -41,6 +43,9 @@ const Hero = ({ settings, taglines, links }: HeroProps) => {
           setStatsList(data);
         }
       } catch (err) {
+        console.error("Stats fetch failed", err);
+      } finally {
+        setLoadingStats(false);
       }
 
       try {
@@ -50,6 +55,7 @@ const Hero = ({ settings, taglines, links }: HeroProps) => {
           setCvStatus(data);
         }
       } catch (err) {
+        console.error("CV status fetch failed", err);
       }
     };
     fetchHeroData();
@@ -179,21 +185,33 @@ const Hero = ({ settings, taglines, links }: HeroProps) => {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {(statsList.length > 0 ? statsList : stats).map((stat) => (
-                <div
-                  key={stat.label}
-                  className="bg-card border border-border rounded-lg p-4 text-center transition-all duration-300 card-glow group relative"
-                  title={stat.tooltip || undefined}
-                >
-                  <div className="text-2xl font-bold text-neon-green font-mono">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
-                  {stat.tooltip && (
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-muted text-foreground text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-mono">
-                      {stat.tooltip}
-                    </div>
-                  )}
-                </div>
-              ))}
+              {loadingStats ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-card border border-border rounded-lg p-4 text-center flex flex-col items-center justify-center h-[76px] space-y-2"
+                  >
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                ))
+              ) : (
+                (statsList.length > 0 ? statsList : stats).map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="bg-card border border-border rounded-lg p-4 text-center transition-all duration-300 card-glow group relative"
+                    title={stat.tooltip || undefined}
+                  >
+                    <div className="text-2xl font-bold text-neon-green font-mono">{stat.value}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
+                    {stat.tooltip && (
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-muted text-foreground text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-mono">
+                        {stat.tooltip}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
 
             <div className="flex flex-wrap gap-4">

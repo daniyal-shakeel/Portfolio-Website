@@ -15,8 +15,10 @@ import {
   Loader2,
   AlertCircle,
   FileQuestion,
+  Hand,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import { Skeleton } from "@/components/ui/skeleton";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -45,11 +47,18 @@ const CvViewer = () => {
   const [baseFitScale, setBaseFitScale] = useState<number>(1.0);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isRendering, setIsRendering] = useState<boolean>(false);
+  const [isPanning, setIsPanning] = useState<boolean>(false);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerWrapperRef = useRef<HTMLDivElement | null>(null);
   const renderTaskRef = useRef<PageRenderTask | null>(null);
+  const panStartRef = useRef<{ x: number; y: number; scrollLeft: number; scrollTop: number }>({
+    x: 0,
+    y: 0,
+    scrollLeft: 0,
+    scrollTop: 0,
+  });
 
   useEffect(() => {
     document.title = "Curriculum Vitae | Muhammad Daniyal Shakeel";
@@ -203,14 +212,26 @@ const CvViewer = () => {
 
   const handleResetZoom = () => {
     setScale(baseFitScale);
+    if (containerRef.current) {
+      containerRef.current.scrollLeft = 0;
+      containerRef.current.scrollTop = 0;
+    }
   };
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
+    if (containerRef.current) {
+      containerRef.current.scrollLeft = 0;
+      containerRef.current.scrollTop = 0;
+    }
   };
 
   const handleNextPage = () => {
     setCurrentPage((prev) => Math.min(prev + 1, numPages));
+    if (containerRef.current) {
+      containerRef.current.scrollLeft = 0;
+      containerRef.current.scrollTop = 0;
+    }
   };
 
   const toggleFullscreen = async () => {
@@ -227,8 +248,69 @@ const CvViewer = () => {
     }
   };
 
+  const isZoomed = scale > baseFitScale;
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isZoomed || !containerRef.current || e.button !== 0) return;
+    setIsPanning(true);
+    panStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      scrollLeft: containerRef.current.scrollLeft,
+      scrollTop: containerRef.current.scrollTop,
+    };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isPanning || !containerRef.current) return;
+    e.preventDefault();
+    const dx = e.clientX - panStartRef.current.x;
+    const dy = e.clientY - panStartRef.current.y;
+    containerRef.current.scrollLeft = panStartRef.current.scrollLeft - dx;
+    containerRef.current.scrollTop = panStartRef.current.scrollTop - dy;
+  };
+
+  const handleMouseUp = () => {
+    if (isPanning) {
+      setIsPanning(false);
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isZoomed || !containerRef.current || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    setIsPanning(true);
+    panStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      scrollLeft: containerRef.current.scrollLeft,
+      scrollTop: containerRef.current.scrollTop,
+    };
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isPanning || !containerRef.current || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - panStartRef.current.x;
+    const dy = touch.clientY - panStartRef.current.y;
+    containerRef.current.scrollLeft = panStartRef.current.scrollLeft - dx;
+    containerRef.current.scrollTop = panStartRef.current.scrollTop - dy;
+  };
+
+  const handleTouchEnd = () => {
+    if (isPanning) {
+      setIsPanning(false);
+    }
+  };
+
   const themeClass = settings?.selectedPalette ? `theme-${settings.selectedPalette}` : "theme-matrix";
   const filename = cvInfo?.filename || "Muhammad_Daniyal_Shakeel_CV.pdf";
+
+  const cursorClass = !isZoomed
+    ? "cursor-default"
+    : isPanning
+    ? "cursor-grabbing select-none"
+    : "cursor-grab select-none";
 
   return (
     <div className={`min-h-screen bg-background text-foreground ${themeClass}`}>
@@ -268,9 +350,30 @@ const CvViewer = () => {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {status === "loading" && (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-            <Loader2 className="w-8 h-8 animate-spin text-neon-green" />
-            <div className="font-mono text-sm text-muted-foreground">Loading curriculum vitae...</div>
+          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 w-full max-w-3xl mx-auto">
+            <div className="flex items-center gap-2 font-mono text-sm text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin text-neon-green" />
+              <span>Loading curriculum vitae...</span>
+            </div>
+            <div className="w-full bg-card border border-border rounded-lg p-6 sm:p-10 shadow-xl space-y-6">
+              <div className="space-y-3">
+                <Skeleton className="h-8 w-1/2" />
+                <Skeleton className="h-4 w-1/3" />
+              </div>
+              <div className="space-y-2 pt-4">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-4/5" />
+              </div>
+              <div className="space-y-3 pt-4">
+                <Skeleton className="h-6 w-1/4" />
+                <Skeleton className="h-16 w-full" />
+              </div>
+              <div className="space-y-3 pt-4">
+                <Skeleton className="h-6 w-1/4" />
+                <Skeleton className="h-16 w-full" />
+              </div>
+            </div>
           </div>
         )}
 
@@ -385,6 +488,15 @@ const CvViewer = () => {
                 >
                   <RotateCcw className="w-4 h-4" />
                 </button>
+                {isZoomed && (
+                  <span
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded bg-background border border-border text-muted-foreground select-none"
+                    title="Drag or swipe to pan"
+                  >
+                    <Hand className="w-3.5 h-3.5 text-neon-green" />
+                    <span className="hidden sm:inline text-[11px]">Pan</span>
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center gap-1.5">
@@ -411,10 +523,17 @@ const CvViewer = () => {
 
             <div
               ref={containerRef}
-              className="flex-1 overflow-auto p-4 sm:p-6 flex justify-center items-start min-h-[65vh] max-h-[82vh] bg-muted/20"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              className={`flex-1 overflow-auto p-4 sm:p-6 flex justify-center items-start min-h-[65vh] max-h-[82vh] bg-muted/20 ${cursorClass}`}
             >
               <div className="relative inline-block shadow-2xl rounded-sm overflow-hidden border border-border/80 bg-white">
-                <canvas ref={canvasRef} className="block max-w-none" />
+                <canvas ref={canvasRef} className="block max-w-none pointer-events-none" />
                 {isRendering && (
                   <div className="absolute inset-0 bg-background/20 backdrop-blur-[1px] flex items-center justify-center">
                     <Loader2 className="w-6 h-6 animate-spin text-neon-green" />

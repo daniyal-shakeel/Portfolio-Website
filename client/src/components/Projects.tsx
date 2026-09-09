@@ -3,6 +3,7 @@ import { Star, ExternalLink, X, Github, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Project {
   _id: string;
@@ -37,6 +38,7 @@ const handleDemoSoon = (e: React.MouseEvent) => {
 const Projects = () => {
   const [projectsList, setProjectsList] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -55,6 +57,8 @@ const Projects = () => {
         }
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProjects();
@@ -84,7 +88,29 @@ const Projects = () => {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {projectsList.map((project) => (
+          {loading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex flex-col bg-card border border-border rounded-xl overflow-hidden shadow-sm"
+              >
+                <Skeleton className="aspect-video w-full rounded-none" />
+                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-5/6" />
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 pt-2">
+                    <Skeleton className="h-5 w-14 rounded-full" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                    <Skeleton className="h-5 w-12 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            projectsList.map((project) => (
             <div
               key={project._id}
               onClick={() => setSelectedProject(project)}
@@ -133,11 +159,12 @@ const Projects = () => {
                   )}
                 </div>
               </div>
-            </div>
-          ))}
+              </div>
+            ))
+          )}
         </div>
 
-        {projectsList.length === 0 && (
+        {!loading && projectsList.length === 0 && (
           <div className="text-center py-10 text-xs text-muted-foreground">No projects found.</div>
         )}
       </div>

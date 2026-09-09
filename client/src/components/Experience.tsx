@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Experience {
   _id: string;
@@ -14,6 +15,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 const Experience = () => {
   const [expList, setExpList] = useState<Experience[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchExperience = async () => {
@@ -24,6 +26,9 @@ const Experience = () => {
           setExpList(data);
         }
       } catch (err) {
+        console.error("Experience fetch failed", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchExperience();
@@ -37,28 +42,46 @@ const Experience = () => {
         </h2>
 
         <div className="space-y-6">
-          {expList.map((exp) => (
-            <div
-              key={exp._id}
-              className="bg-card border border-border rounded-lg p-6 border-l-4 border-l-primary card-glow"
-            >
-              <div className="font-mono text-sm text-neon-green font-semibold">{exp.role}</div>
-              <div className="text-foreground text-sm mt-1">
-                {exp.company} · {exp.location}
+          {loading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-card border border-border rounded-lg p-6 border-l-4 border-l-primary/40 space-y-3"
+              >
+                <Skeleton className="h-5 w-44" />
+                <Skeleton className="h-4 w-56" />
+                <Skeleton className="h-3 w-32" />
+                <div className="mt-4 space-y-2">
+                  <Skeleton className="h-4 w-11/12" />
+                  <Skeleton className="h-4 w-4/5" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
               </div>
-              <div className="text-muted-foreground text-xs font-mono mt-1">
-                {exp.startDate} – {exp.endDate}
+            ))
+          ) : (
+            expList.map((exp) => (
+              <div
+                key={exp._id}
+                className="bg-card border border-border rounded-lg p-6 border-l-4 border-l-primary card-glow"
+              >
+                <div className="font-mono text-sm text-neon-green font-semibold">{exp.role}</div>
+                <div className="text-foreground text-sm mt-1">
+                  {exp.company} · {exp.location}
+                </div>
+                <div className="text-muted-foreground text-xs font-mono mt-1">
+                  {exp.startDate} – {exp.endDate}
+                </div>
+                <ul className="mt-4 space-y-2">
+                  {exp.bullets.map((bullet, j) => (
+                    <li key={j} className="text-muted-foreground text-sm flex items-start gap-2">
+                      <span className="text-neon-green mt-0.5">→</span>
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="mt-4 space-y-2">
-                {exp.bullets.map((bullet, j) => (
-                  <li key={j} className="text-muted-foreground text-sm flex items-start gap-2">
-                    <span className="text-neon-green mt-0.5">→</span>
-                    <span>{bullet}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </section>

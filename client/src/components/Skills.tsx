@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SkillCategory {
   _id: string;
@@ -11,6 +12,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 const Skills = () => {
   const [skillsList, setSkillsList] = useState<SkillCategory[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSkills = async () => {
@@ -21,6 +23,9 @@ const Skills = () => {
           setSkillsList(data);
         }
       } catch (err) {
+        console.error("Skills fetch failed", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchSkills();
@@ -35,36 +40,56 @@ const Skills = () => {
 
         <div className="bg-card border border-border rounded-lg p-6 font-mono text-sm space-y-6">
           <div className="text-muted-foreground">{"{"}</div>
-          {skillsList.map((category, i) => {
-            const isExploring = category.key === "exploring";
-            return (
-              <div key={category._id} className="pl-4">
-                <div className="text-neon-cyan mb-2">
-                  "{category.label}"<span className="text-muted-foreground">: [</span>
+          {loading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="pl-4 space-y-2">
+                <div className="mb-2">
+                  <Skeleton className="h-4 w-32" />
                 </div>
                 <div className="flex flex-wrap gap-2 pl-4 mb-1">
-                  {category.items.map((item) => (
-                    <span
-                      key={item}
-                      className={`bg-muted text-foreground text-xs px-2.5 py-1 rounded border border-border pill-glow transition-all cursor-default group relative ${
-                        isExploring ? "pulse-soft border-primary/30 text-neon-green" : ""
-                      }`}
-                    >
-                      {item}
-                      {isExploring && (
-                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-muted text-foreground text-xs px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-border">
-                          (still Googling this)
-                        </span>
-                      )}
-                    </span>
-                  ))}
+                  <Skeleton className="h-6 w-20 rounded" />
+                  <Skeleton className="h-6 w-24 rounded" />
+                  <Skeleton className="h-6 w-16 rounded" />
+                  <Skeleton className="h-6 w-28 rounded" />
+                  <Skeleton className="h-6 w-20 rounded" />
                 </div>
                 <div className="text-muted-foreground pl-0">
-                  ]{i < skillsList.length - 1 ? "," : ""}
+                  ]{i < 2 ? "," : ""}
                 </div>
               </div>
-            );
-          })}
+            ))
+          ) : (
+            skillsList.map((category, i) => {
+              const isExploring = category.key === "exploring";
+              return (
+                <div key={category._id} className="pl-4">
+                  <div className="text-neon-cyan mb-2">
+                    "{category.label}"<span className="text-muted-foreground">: [</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 pl-4 mb-1">
+                    {category.items.map((item) => (
+                      <span
+                        key={item}
+                        className={`bg-muted text-foreground text-xs px-2.5 py-1 rounded border border-border pill-glow transition-all cursor-default group relative ${
+                          isExploring ? "pulse-soft border-primary/30 text-neon-green" : ""
+                        }`}
+                      >
+                        {item}
+                        {isExploring && (
+                          <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-muted text-foreground text-xs px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-border">
+                            (still Googling this)
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="text-muted-foreground pl-0">
+                    ]{i < skillsList.length - 1 ? "," : ""}
+                  </div>
+                </div>
+              );
+            })
+          )}
           <div className="text-muted-foreground">{"}"}</div>
         </div>
       </div>
